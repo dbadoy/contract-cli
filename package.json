@@ -1,0 +1,25 @@
+{
+  "name": "contract-cli",
+  "version": "0.0.1",
+  "main": "index.js",
+  "scripts": {
+    "format": "npx prettier . --write"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dbadoy/contract-cli.git"
+  },
+  "author": "dbadoy",
+  "bugs": {
+    "url": "https://github.com/dbadoy/contract-cli/issues"
+  },
+  "homepage": "https://github.com/dbadoy/contract-cli#readme",
+  "description": "EVM Contract CLI Tool",
+  "dependencies": {
+    "ethers": "^6.13.5",
+    "prompts": "^2.4.2"
+  },
+  "devDependencies": {
+    "@types/prompts": "^2.4.9"
+  }
+}
