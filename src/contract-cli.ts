@@ -7,7 +7,7 @@ interface Response {
   outputs: ABIParameter[];
 }
 
-export class ContratCLI {
+export class ContractCLI {
   constructor(private readonly abi: ContractABI) {}
 
   async run(contract: ethers.Contract): Promise<Response> {
