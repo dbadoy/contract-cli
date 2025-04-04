@@ -1,8 +1,9 @@
 {
   "name": "contract-cli",
   "version": "0.0.1",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
+    "build": "tsc --build .",
     "format": "npx prettier . --write"
   },
   "repository": {

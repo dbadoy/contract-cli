@@ -2,7 +2,7 @@ import ethers, { ContractTransactionResponse, Result } from "ethers";
 import prompts, { Choice } from "prompts";
 import { ContractABI, ABIFunction, ABIParameter } from "./abi";
 
-interface Response {
+export interface CLIResult {
   result: Result | ContractTransactionResponse;
   outputs: ABIParameter[];
 }
@@ -10,7 +10,7 @@ interface Response {
 export class ContractCLI {
   constructor(private readonly abi: ContractABI) {}
 
-  async run(contract: ethers.Contract): Promise<Response> {
+  async run(contract: ethers.Contract): Promise<CLIResult> {
     const sendable = contract.runner?.sendTransaction !== undefined;
 
     const res = await prompts([
