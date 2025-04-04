@@ -1,16 +1,19 @@
-import ethers, { ContractTransactionResponse, Result } from "ethers";
+import ethers, {
+  ContractTransactionResponse,
+  Result as ViewResult,
+} from "ethers";
 import prompts, { Choice } from "prompts";
 import { ContractABI, ABIFunction, ABIParameter } from "./abi";
 
-export interface CLIResult {
-  result: Result | ContractTransactionResponse;
+export interface Result {
+  result: ViewResult | ContractTransactionResponse;
   outputs: ABIParameter[];
 }
 
 export class ContractCLI {
   constructor(private readonly abi: ContractABI) {}
 
-  async run(contract: ethers.Contract): Promise<CLIResult> {
+  async run(contract: ethers.Contract): Promise<Result> {
     const sendable = contract.runner?.sendTransaction !== undefined;
 
     const res = await prompts([
@@ -25,22 +28,21 @@ export class ContractCLI {
 
     const abiFunction: ABIFunction = res.abiFunction;
 
-    const params: string[] = await this.inputParameters(abiFunction);
-    const value: bigint = await this.inputMsgValue(abiFunction);
-    const blockTag: number | undefined = await this.inputBlockTag(abiFunction);
+    const [params, value, blockTag] = await Promise.all([
+      this.inputParameters(abiFunction),
+      this.inputMsgValue(abiFunction),
+      this.inputBlockTag(abiFunction),
+    ]);
 
-    const functionName = abiFunction.name;
+    const options = {
+      value,
+      ...(blockTag !== undefined && { blockTag }),
+    };
 
-    if (params.length > 0)
-      return {
-        result: await contract[functionName](...params, {
-          value,
-          blockTag: blockTag,
-        }),
-        outputs: abiFunction.outputs,
-      };
     return {
-      result: await contract[functionName]({ value, blockTag: blockTag }),
+      result: await contract[abiFunction.name](
+        ...(params.length > 0 ? [...params, options] : [options]),
+      ),
       outputs: abiFunction.outputs,
     };
   }
