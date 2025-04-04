@@ -51,20 +51,14 @@ export class ContractCLI {
     onlyViewFunctions: boolean,
   ): Promise<Choice[]> {
     const selections: Choice[] = [];
-    for await (const definition of this.abi) {
+
+    for (const definition of this.abi) {
       if (definition.type !== "function") continue;
-      if (onlyViewFunctions) {
-        if (
-          definition.stateMutability === "view" ||
-          definition.stateMutability === "pure"
-        ) {
-          selections.push({
-            title: definition.name,
-            description: JSON.stringify(definition.inputs),
-            value: definition,
-          });
-        }
-      } else {
+
+      if (
+        !onlyViewFunctions ||
+        ["view", "pure"].includes(definition.stateMutability)
+      ) {
         selections.push({
           title: definition.name,
           description: JSON.stringify(definition.inputs),
@@ -72,6 +66,7 @@ export class ContractCLI {
         });
       }
     }
+
     return selections;
   }
 
@@ -94,37 +89,32 @@ export class ContractCLI {
   private async inputBlockTag(
     abiFunction: ABIFunction,
   ): Promise<number | undefined> {
-    let blockTag: number | undefined;
-
-    if (
-      abiFunction.stateMutability === "view" ||
-      abiFunction.stateMutability === "pure"
-    ) {
-      const r = await prompts({
-        type: "number",
-        name: "blockTag",
-        message: "blockTag (default: latest)",
-        initial: undefined,
-      });
-      if (r.blockTag !== "") blockTag = r.blockTag;
+    if (!["view", "pure"].includes(abiFunction.stateMutability)) {
+      return undefined;
     }
 
-    return blockTag;
+    const insert = await prompts({
+      type: "number",
+      name: "blockTag",
+      message: "blockTag (default: latest)",
+      initial: undefined,
+    });
+
+    return insert.blockTag !== "" ? insert.blockTag : undefined;
   }
 
   private async inputMsgValue(abiFunction: ABIFunction): Promise<bigint> {
-    let msgValue: bigint = BigInt(0);
-
-    if (abiFunction.stateMutability === "payable") {
-      const r = await prompts({
-        type: "number",
-        name: "value",
-        message: "msg.value (default: 0)",
-        initial: 0,
-      });
-      msgValue = BigInt(r.value);
+    if (abiFunction.stateMutability !== "payable") {
+      return BigInt(0);
     }
 
-    return msgValue;
+    const insert = await prompts({
+      type: "number",
+      name: "value",
+      message: "msg.value (default: 0)",
+      initial: 0,
+    });
+
+    return BigInt(insert.value || 0);
   }
 }
